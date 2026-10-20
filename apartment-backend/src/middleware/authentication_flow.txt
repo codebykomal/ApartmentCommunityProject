@@ -1,0 +1,258 @@
+JWT COMPLETE FLOW
+
+1) USER LOGIN
+
+Client:
+POST /api/users/login
+
+Body:
+{
+  email,
+  password
+}
+
+        |
+        ↓
+
+Login Controller
+
+- Email se user find karta hai
+- bcrypt.compare() se password verify karta hai
+
+        |
+        ↓
+
+Password correct hai to:
+
+generateToken(user) call hota hai
+
+
+2) TOKEN GENERATION
+
+generateToken.js:
+
+jwt.sign(
+ {
+   id:user._id,
+   role:user.role
+ },
+ JWT_SECRET
+)
+
+
+JWT token ke andar:
+
+HEADER.PAYLOAD.SIGNATURE
+
+
+Payload me:
+{
+ id,
+ role
+}
+
+
+Token controller ko return hota hai.
+
+
+3) TOKEN CLIENT KO MILTA HAI
+
+Controller:
+
+res.json({
+ token: token
+})
+
+
+Ab client ke paas JWT token hai.
+
+
+------------------------------------------------
+
+
+4) CLIENT PROTECTED API REQUEST BHEJTA HAI
+
+Example:
+
+GET /api/users
+
+
+Header:
+
+Authorization: Bearer <token>
+
+
+------------------------------------------------
+
+
+5) MIDDLEWARE REQUEST SE PEHLE CHALTA HAI
+
+Route:
+
+router.get("/", authMiddleware, getAllUsers);
+
+
+Flow:
+
+Request
+  |
+  ↓
+authMiddleware
+  |
+  ↓
+jwt.verify(token, JWT_SECRET)
+
+
+------------------------------------------------
+
+
+6) JWT VERIFY
+
+jwt.verify() do kaam karta hai:
+
+1. Check karta hai token genuine hai ya nahi
+2. Token ke andar ka payload return karta hai
+
+
+Example:
+
+decoded = {
+ id:"101",
+ role:"RESIDENT"
+}
+
+
+------------------------------------------------
+
+
+7) req.user = decoded
+
+
+Middleware:
+
+req.user = decoded;
+
+
+Meaning:
+
+Verified user information request object me attach kar do.
+
+
+Ab controller access kar sakta hai:
+
+req.user.id
+req.user.role
+
+
+------------------------------------------------
+
+
+8) next()
+
+
+next() ka matlab:
+
+"Middleware ka kaam complete,
+ab request ko next function ke paas bhejo."
+
+
+Route me next function hota hai:
+
+authMiddleware → getAllUsers
+
+
+Isliye controller execute hota hai.
+
+
+------------------------------------------------
+
+
+9) INVALID TOKEN CASE
+
+
+Agar:
+
+- token change hua
+- token expire hua
+- secret key match nahi hui
+
+
+jwt.verify() error throw karega.
+
+
+catch(error) chalega:
+
+
+Response:
+
+401 Unauthorized
+
+{
+ message:"Invalid or expired token"
+}
+
+
+------------------------------------------------
+
+
+FINAL FLOW:
+
+
+LOGIN
+
+User
+ |
+ ↓
+Login Controller
+ |
+ ↓
+bcrypt password check
+ |
+ ↓
+generateToken()
+ |
+ ↓
+JWT Token
+ |
+ ↓
+Client
+
+
+NEXT REQUEST
+
+Client
+ |
+ ↓
+Token + API Request
+ |
+ ↓
+authMiddleware
+ |
+ ↓
+jwt.verify()
+ |
+ ↓
+req.user = decoded
+ |
+ ↓
+next()
+ |
+ ↓
+Controller
+ |
+ ↓
+Database
+
+
+Authentication ka question:
+
+"User kaun hai?"
+
+JWT answer karta hai.
+
+
+Authorization ka question:
+
+"Is user ko kya permission hai?"
+
+Role check answer karega.

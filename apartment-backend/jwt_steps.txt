@@ -1,0 +1,162 @@
+# JWT Authentication Flow (4 Steps)
+
+## Step 1: Login ke time JWT Token banana
+
+User login request bhejta hai:
+
+```
+Email + Password
+```
+
+Backend:
+
+```
+User ka email database me find karta hai
+          |
+          ↓
+bcrypt.compare() se password verify karta hai
+          |
+          ↓
+Password correct hai
+```
+
+Ab backend JWT token banata hai:
+
+```
+HEADER + PAYLOAD + JWT_SECRET
+              |
+              ↓
+        SIGNATURE generate hota hai
+```
+
+JWT token ka structure:
+
+```
+HEADER.PAYLOAD.SIGNATURE
+```
+
+Example:
+
+```
+xxxxx.yyyyy.zzzzz
+```
+
+* Header → Algorithm information (jaise HS256 ,algo and type)
+* Payload → User data (jaise userId, role)
+* Signature → Secret key se banaya hua proof
+
+Fir backend pura token client ko bhej deta hai.
+
+---
+
+## Step 2: Client token ko store karta hai aur request ke sath bhejta hai
+
+Client ko:
+
+```
+JWT Token
+```
+
+milta hai.
+
+Client future requests me token attach karta hai:
+
+Example:
+
+```
+GET /api/profile
+
+Authorization: Bearer JWT_TOKEN
+```
+
+Backend ko:
+
+```
+HEADER.PAYLOAD.SIGNATURE
+```
+
+mil jata hai.
+
+---
+
+## Step 3: Backend token verify karta hai
+
+Backend token ko todta hai:
+
+```
+HEADER
+PAYLOAD
+SIGNATURE
+```
+
+Ab backend ke paas:
+
+```
+Token ke andar wala SIGNATURE
+```
+
+hota hai.
+
+Backend apni secret key use karke dobara signature banata hai:
+
+```
+HEADER + PAYLOAD + JWT_SECRET
+              |
+              ↓
+       NEW_SIGNATURE
+```
+
+Ab backend ke paas do signatures hain:
+
+```
+1. Token wala signature
+2. Naya generated signature
+```
+
+Backend compare karta hai:
+
+```
+Old Signature == New Signature ?
+```
+
+---
+
+## Step 4: Access allow ya reject
+
+Agar:
+
+```
+Old Signature == New Signature
+```
+
+to:
+
+```
+✅ Token genuine hai
+✅ User authenticated hai
+✅ Request allow hogi
+```
+
+Agar:
+
+```
+Old Signature != New Signature
+```
+
+to:
+
+```
+❌ Token invalid hai
+❌ Data ke sath tampering hui hai
+❌ Request reject hogi
+```
+
+---
+
+## Important Points:
+
+* JWT_SECRET client ko kabhi nahi bhejte.
+* JWT_SECRET sirf backend me hota hai.
+* JWT_SECRET password encrypt/decrypt nahi karta.
+* JWT_SECRET ka kaam token ki signature banane aur verify karne ka hota hai.
+* JWT payload encrypted nahi hota, isliye usme password jaise sensitive data nahi rakhte.

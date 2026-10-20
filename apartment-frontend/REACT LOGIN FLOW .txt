@@ -1,0 +1,484 @@
+REACT LOGIN FLOW (SMARTDARZI PROJECT)
+
+1. LOGIN PAGE SCREEN PAR KAISE AATA HAI?
+
+User browser me URL open karta hai:
+
+http://localhost:3000/#/authentication/login
+
+Flow:
+
+Browser
+   |
+   ↓
+index.jsx
+   |
+   ↓
+App.jsx
+   |
+   ↓
+Route match hota hai
+   |
+   ↓
+Login.jsx render hota hai
+
+
+App.jsx me route hota hai:
+
+<Route
+ path="/authentication/login"
+ element={<Login />}
+/>
+
+Meaning:
+Agar URL /authentication/login hai to React Login.jsx component screen par dikhayega.
+
+
+--------------------------------------------------
+
+
+2. LOGIN.JSX KA KAAM
+
+Login.jsx ka main kaam:
+
+- User se email lena
+- User se password lena
+- Backend ko login request bhejna
+- Backend ka response lena
+- Token aur role save karna
+- User ko correct dashboard par bhejna
+
+
+--------------------------------------------------
+
+
+3. USER INPUT FLOW
+
+Login.jsx me state hoti hai:
+
+const [email,setEmail] = useState("")
+const [password,setPassword] = useState("")
+
+
+Starting:
+
+email = ""
+password = ""
+
+
+User input:
+
+Email:
+admin@gmail.com
+
+Password:
+12345
+
+
+Flow:
+
+User type karta hai
+        |
+        ↓
+onChange()
+        |
+        ↓
+setEmail() / setPassword()
+        |
+        ↓
+React state update hoti hai
+
+
+Final state:
+
+email = "admin@gmail.com"
+password = "12345"
+
+
+--------------------------------------------------
+
+
+4. LOGIN BUTTON CLICK FLOW
+
+Button:
+
+<CButton type="submit">
+
+
+Form:
+
+<CForm onSubmit={handleLogin}>
+
+
+Button click hone par:
+
+Button Click
+      |
+      ↓
+handleLogin() function call hota hai
+
+
+--------------------------------------------------
+
+
+5. handleLogin FUNCTION
+
+Main code:
+
+const response = await userService.login({
+    email,
+    password
+})
+
+
+Yaha object banta hai:
+
+{
+ email:"admin@gmail.com",
+ password:"12345"
+}
+
+
+Ye object userService.js ko pass hota hai.
+
+
+--------------------------------------------------
+
+
+6. userService.js KA KAAM
+
+
+Function:
+
+const login = (credentials)=>{
+
+    return api.post("/users/login", credentials);
+
+};
+
+
+Yaha credentials me aata hai:
+
+{
+ email:"admin@gmail.com",
+ password:"12345"
+}
+
+
+userService ka kaam:
+
+React aur Backend ke beech API request manage karna.
+
+
+Flow:
+
+Login.jsx
+    |
+    ↓
+userService.js
+    |
+    ↓
+axios.js
+    |
+    ↓
+Backend
+
+
+--------------------------------------------------
+
+
+7. AXIOS FLOW
+
+
+axios.js me baseURL hota hai:
+
+http://localhost:5000/api
+
+
+Service me:
+
+api.post("/users/login")
+
+
+Final request:
+
+POST
+http://localhost:5000/api/users/login
+
+
+Body:
+
+{
+ email:"admin@gmail.com",
+ password:"12345"
+}
+
+
+--------------------------------------------------
+
+
+8. AXIOS INTERCEPTOR
+
+
+Request backend jaane se pehle interceptor chalta hai.
+
+
+Flow:
+
+API Request
+      |
+      ↓
+Interceptor
+      |
+      ↓
+Backend
+
+
+Interceptor ka kaam:
+
+- Token check karna
+- Authorization header add karna
+
+
+Example:
+
+Before:
+
+Headers:
+Content-Type
+
+
+After:
+
+Headers:
+Content-Type
+Authorization: Bearer token
+
+
+--------------------------------------------------
+
+
+9. BACKEND FLOW
+
+
+Request:
+
+POST /api/users/login
+
+
+Backend flow:
+
+Route
+  |
+  ↓
+Controller
+  |
+  ↓
+Service
+  |
+  ↓
+Database
+
+
+Backend:
+
+1. Email check karta hai
+2. Password compare karta hai
+3. JWT token generate karta hai
+
+
+--------------------------------------------------
+
+
+10. BACKEND RESPONSE
+
+
+Backend response:
+
+{
+ token:"eyJhbGci...",
+ user:{
+    name:"Admin",
+    role:"ADMIN"
+ }
+}
+
+
+Frontend me response wapas aata hai.
+
+
+Flow:
+
+Backend
+   |
+   ↓
+axios.js
+   |
+   ↓
+userService.login()
+   |
+   ↓
+Login.jsx
+
+
+--------------------------------------------------
+
+
+11. TOKEN AUR ROLE LENA
+
+
+Login.jsx me:
+
+const token = response.data.token
+
+const role = response.data.user.role
+
+
+Token:
+
+eyJhbGci...
+
+
+Role:
+
+ADMIN
+
+
+--------------------------------------------------
+
+
+12. AUTHCONTEXT FLOW
+
+
+Login.jsx:
+
+login(token,role)
+
+
+Ye AuthContext ka login function call karta hai.
+
+
+Flow:
+
+Login.jsx
+     |
+     ↓
+AuthContext.jsx
+
+
+AuthContext ka kaam:
+
+- Token save karna
+- Role save karna
+- State update karna
+
+
+Token:
+
+localStorage me save hota hai.
+
+
+Role:
+
+localStorage me save hota hai.
+
+
+--------------------------------------------------
+
+
+13. REDIRECT FLOW
+
+
+Agar role ADMIN hai:
+
+
+navigate("/dashboard")
+
+
+Agar role RESIDENT hai:
+
+
+navigate("/resident-dashboard")
+
+
+--------------------------------------------------
+
+
+COMPLETE LOGIN FLOW
+
+
+User
+ |
+ | Email + Password enter karta hai
+ ↓
+Login.jsx
+ |
+ | useState me data store hota hai
+ ↓
+handleLogin()
+ |
+ ↓
+userService.login()
+ |
+ ↓
+axios.js
+ |
+ | POST request
+ ↓
+Backend API
+ |
+ ↓
+Controller
+ |
+ ↓
+Database
+ |
+ | Token + Role return
+ ↓
+Login.jsx
+ |
+ ↓
+AuthContext
+ |
+ ↓
+localStorage
+ |
+ ↓
+navigate()
+ |
+ ↓
+Dashboard
+
+
+--------------------------------------------------
+
+
+FILE RESPONSIBILITY
+
+
+App.jsx:
+Login route dikhata hai
+
+
+Login.jsx:
+User input leta hai aur login flow control karta hai
+
+
+userService.js:
+API calls organize karta hai
+
+
+axios.js:
+Backend request bhejta hai aur token attach karta hai
+
+
+Backend:
+User verify karta hai aur token banata hai
+
+
+AuthContext.jsx:
+Login state manage karta hai
+
+
+auth.js:
+LocalStorage ka kaam karta hai
